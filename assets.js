@@ -1,11 +1,4 @@
 
-
-/**
- * hasOwnProperty.
- */
-
-var has = Object.prototype.hasOwnProperty;
-
 /**
  * Require the given path.
  *
@@ -69,6 +62,7 @@ require.aliases = {};
  */
 
 require.resolve = function(path) {
+  if (path.charAt(0) === '/') path = path.slice(1);
   var index = path + '/index.js';
 
   var paths = [
@@ -81,10 +75,10 @@ require.resolve = function(path) {
 
   for (var i = 0; i < paths.length; i++) {
     var path = paths[i];
-    if (has.call(require.modules, path)) return path;
+    if (require.modules.hasOwnProperty(path)) return path;
   }
 
-  if (has.call(require.aliases, index)) {
+  if (require.aliases.hasOwnProperty(index)) {
     return require.aliases[index];
   }
 };
@@ -138,7 +132,7 @@ require.register = function(path, definition) {
  */
 
 require.alias = function(from, to) {
-  if (!has.call(require.modules, from)) {
+  if (!require.modules.hasOwnProperty(from)) {
     throw new Error('Failed to alias "' + from + '", it does not exist');
   }
   require.aliases[to] = from;
@@ -181,17 +175,18 @@ require.relative = function(parent) {
    */
 
   localRequire.resolve = function(path) {
+    var c = path.charAt(0);
+    if ('/' == c) return path.slice(1);
+    if ('.' == c) return require.normalize(p, path);
+
     // resolve deps by returning
     // the dep in the nearest "deps"
     // directory
-    if ('.' != path.charAt(0)) {
-      var segs = parent.split('/');
-      var i = lastIndexOf(segs, 'deps') + 1;
-      if (!i) i = 0;
-      path = segs.slice(0, i + 1).join('/') + '/deps/' + path;
-      return path;
-    }
-    return require.normalize(p, path);
+    var segs = parent.split('/');
+    var i = lastIndexOf(segs, 'deps') + 1;
+    if (!i) i = 0;
+    path = segs.slice(0, i + 1).join('/') + '/deps/' + path;
+    return path;
   };
 
   /**
@@ -199,7 +194,7 @@ require.relative = function(parent) {
    */
 
   localRequire.exists = function(path) {
-    return has.call(require.modules, localRequire.resolve(path));
+    return require.modules.hasOwnProperty(localRequire.resolve(path));
   };
 
   return localRequire;
@@ -9673,8 +9668,21 @@ $('article').each(function () {
     var body = that.children('.body');
     body.hide();
     header.toggle(
-        function () { body.slideDown('fast'); that.addClass('active'); },
-        function () { body.slideUp('fast'); that.removeClass('active'); }
+        function () { 
+            var it = this;
+            $('a.control.hide').trigger('click');
+            body.slideDown('fast', function(){
+            //body.slideDown('fast', function(){
+                $('html, body').animate({ scrollTop: $(it).parent().offset().top }, 'fast');
+            });
+            that.addClass('active');
+            console.log(this);
+            //alert('hey');
+        },
+        function () {
+            body.slideUp('fast');
+            that.removeClass('active');
+        }
     );
 });
 
@@ -9686,15 +9694,17 @@ $('#sidebar a').each(function () {
     var that = $(this);
     var id = that.attr('href').substring(1);
     that.click(function (e) {
-        var header = $('article a[name="'+ id +'"]')
+        e.preventDefault();
+        var header = $('article a[name="'+ id +'"]');
         if (!header.parent().hasClass('active')) header.trigger('click');
-        $('html, body').animate({ scrollTop: header.offset().top }, 'fast');
     });
 
     // If we find a link in the body with similar anchor, add the same behavior
     $('.body a[href=#'+ id +']').click(function (e) {
+        e.preventDefault();
         $('#sidebar a[href=#'+ id +']').trigger('click');
     });
+
 });
 
 // Hide all/Show all links
@@ -9711,7 +9721,8 @@ hide.click(function () {
 $('#content').prepend(hide);
 
 // Making our navigation sticky
-new Filter($('#sidebar > ul'));
+//new Filter($('#sidebar > ul'));
+
 });
 require.alias("boot/index.js", "carte/deps/boot/index.js");
 

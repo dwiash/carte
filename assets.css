@@ -511,7 +511,7 @@ code {
 
 /* References */
 #content {
-  padding: 20px;
+  padding: 5px 20px 20px 20px;
   padding-left: 260px;
   max-width: 700px;
 }
@@ -524,11 +524,12 @@ code {
 
 #content article {
   clear: both;
-  margin: 15px 0;
+  margin: 0;
+  padding: 15px 0 0 0;
 }
 
 #content article > a {
-  background: #333;
+  background: #999;
   border-radius: 2px;
   -moz-border-radius: 2px;
   -webkit-border-radius: 2px;
@@ -536,16 +537,23 @@ code {
   display: block;
   padding: 15px;
 }
+#content article.active > a {
+  background: #333;
+}
 #content article > a:hover {
   background: #222;
   text-decoration: none;
 }
 
 #content a h2 {
-  color: #fff;
+  color: #666;
   font-size: 18px;
   font-weight: normal;
   margin: 0;
+}
+#content article.active a h2 ,
+#content a:hover h2 {
+  color: #fff;
 }
 
 #content a h2 code {
@@ -636,4 +644,8 @@ code {
   display: block;
   padding: 15px;
   white-space: pre;
+}
+
+a.control{
+    display: none;
 }
